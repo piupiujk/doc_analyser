@@ -21,7 +21,7 @@ UPLOAD_DIR = 'documents_image'
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
-@router.post('/upload_doc')
+@router.post('/upload_doc', summary='Добавить документ', description='<h1>Добавить документ в формате b64<h1>')
 async def upload_doc(image_base64: SDoc):
     if 'base64,' in image_base64.image_base64:
         cut = image_base64.image_base64.find('base64,') + 7
@@ -42,7 +42,7 @@ async def upload_doc(image_base64: SDoc):
         raise HTTPException(status_code=400, detail=f"Ошибка при обработке изображения: {str(e)}")
 
 
-@router.delete('/doc_delete/{document_id}')
+@router.delete('/doc_delete/{document_id}', summary='Удалить документ', description='<h1>Удаляет документ из бд и диска<h1>')
 async def doc_delete(doc_id: int):
     path = await DocumentsRepository.get_document(doc_id)
     if not path:
