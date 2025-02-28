@@ -1,21 +1,22 @@
+import datetime
+
 from dotenv import load_dotenv
 import os
 
-from sqlalchemy import BIGINT, create_engine, NullPool
+from sqlalchemy import BIGINT, NullPool, text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
+
+from app.config import get_db_url, get_test_db_url, settings
 
 load_dotenv()
 
-# if os.getenv("MODE") == "TEST":
-#     DATABASE_URL = f"postgresql+asyncpg://{os.getenv('TEST_DB_USER')}:{os.getenv('TEST_DB_PASS')}@{os.getenv('TEST_DB_HOST')}:{os.getenv('TEST_DB_PORT')}/{os.getenv('TEST_DB_NAME')}"
-#     DATABASE_PARAMS = {'poolclass': NullPool}
-# else:
-#     DATABASE_URL = f"postgresql+asyncpg://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-#     DATABASE_PARAMS = {}
-
-DATABASE_URL = f"postgresql+asyncpg://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-DATABASE_PARAMS = {}
+if settings.MODE == "TEST":
+    DATABASE_URL = get_test_db_url()
+    DATABASE_PARAMS = {'poolclass': NullPool}
+else:
+    DATABASE_URL = get_db_url()
+    DATABASE_PARAMS = {}
 
 engine = create_async_engine(DATABASE_URL, **DATABASE_PARAMS)
 
@@ -26,3 +27,10 @@ class Base(DeclarativeBase):
     type_annotation_map = {
         BIGINT: BIGINT
     }
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(server_default=text("TIMEZONE('utc', now())"))
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        server_default=text("TIMEZONE('utc', now())"),
+        onupdate=datetime.datetime.now(datetime.timezone.utc),
+    )

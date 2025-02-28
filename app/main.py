@@ -1,9 +1,13 @@
 from fastapi import FastAPI
 
-from app.documents.router import router as router_docs
-from app.documents_text.router import router as router_docs_text
+from app.routers import router as main_router
 
 app = FastAPI(title='Документы', summary='Данное API получает текст из фотографии документа')
 
-app.include_router(router_docs)
-app.include_router(router_docs_text)
+
+@app.get("/", summary='Главная страница')
+def home_page():
+    return {"message": "Для тестов открой документацию добавив /docs в адрес"}
+
+
+app.include_router(main_router)
